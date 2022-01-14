@@ -51,4 +51,13 @@ export class DemoComponent implements OnInit {
     var mesh = new THREE.Mesh(geometry, material);
     return mesh;
   }
+
+  getPlane(w, h, d) {
+    var geometry = new THREE.BoxGeometry(w, h, d);
+    var material = new THREE.MeshBasicMaterial({ 
+      color: 0x00f0
+    });
+    var mesh = new THREE.Mesh(geometry, material);
+    return mesh;
+  }
 }
