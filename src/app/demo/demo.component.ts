@@ -10,18 +10,26 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 export class DemoComponent implements OnInit {
 
   constructor() { }
+  scene:any;
 
   ngOnInit(): void {
-    this.main();
+    this.scene = this.main();
+    console.log(this.scene);
   }
 
   main() {
-    var scene = new THREE.Scene();
+    let scene = new THREE.Scene();
     
-    var box = this.getBox(1, 1, 1);
-    scene.add(box);
+    let box = this.getBox(1, 1, 1);
+    box.position.y = box.geometry.parameters.height/2;
 
-    var camera = new THREE.PerspectiveCamera(
+    let plane = this.getPlane(4);
+    plane.rotation.x = Math.PI/2;
+
+    scene.add(box);
+    scene.add(plane);
+
+    let camera = new THREE.PerspectiveCamera(
       45,
       window.innerWidth/window.innerHeight,
       1,
@@ -34,30 +42,33 @@ export class DemoComponent implements OnInit {
 
     camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-    var renderer = new THREE.WebGLRenderer();
+    let renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('webgl').appendChild(renderer.domElement);
     renderer.render(
       scene,
       camera
     )
+
+    return scene;
   }
 
   getBox(w, h, d) {
-    var geometry = new THREE.BoxGeometry(w, h, d);
-    var material = new THREE.MeshBasicMaterial({ 
+    let geometry = new THREE.BoxGeometry(w, h, d);
+    let material = new THREE.MeshBasicMaterial({ 
       color: 0x00f0
     });
-    var mesh = new THREE.Mesh(geometry, material);
+    let mesh = new THREE.Mesh(geometry, material);
     return mesh;
   }
 
-  getPlane(w, h, d) {
-    var geometry = new THREE.BoxGeometry(w, h, d);
-    var material = new THREE.MeshBasicMaterial({ 
-      color: 0x00f0
+  getPlane(size) {
+    let geometry = new THREE.PlaneGeometry(size, size);
+    let material = new THREE.MeshBasicMaterial({ 
+      color: 0xfcba03,
+      side: THREE.DoubleSide
     });
-    var mesh = new THREE.Mesh(geometry, material);
+    let mesh = new THREE.Mesh(geometry, material);
     return mesh;
   }
 }
