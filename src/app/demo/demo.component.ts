@@ -11,6 +11,7 @@ export class DemoComponent implements OnInit {
 
   constructor() { }
   scene:any;
+  renderer:any;
 
   ngOnInit(): void {
     this.scene = this.main();
@@ -18,7 +19,7 @@ export class DemoComponent implements OnInit {
   }
 
   main() {
-    let scene = new THREE.Scene();
+    var scene = new THREE.Scene();
     
     let box = this.getBox(1, 1, 1);
     box.position.y = box.geometry.parameters.height/2;
@@ -45,10 +46,8 @@ export class DemoComponent implements OnInit {
     let renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('webgl').appendChild(renderer.domElement);
-    renderer.render(
-      scene,
-      camera
-    )
+    this.update(renderer, scene, camera);
+
 
     return scene;
   }
@@ -70,5 +69,16 @@ export class DemoComponent implements OnInit {
     });
     let mesh = new THREE.Mesh(geometry, material);
     return mesh;
+  }
+
+  update(renderer, scene, camera) {
+    renderer.render(
+      scene,
+      camera
+    );
+
+    requestAnimationFrame(() => {
+      this.update(renderer, scene, camera);
+    })
   }
 }
