@@ -2,6 +2,9 @@ import { Component, OnInit } from "@angular/core";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import * as dat from "dat.gui";
+// import * as Noise from "../../assets/scripts/perlin.js";
+
+const noise = require("simplenoise");
 
 @Component({
   selector: "app-demo",
@@ -12,10 +15,12 @@ export class DemoComponent implements OnInit {
   constructor() {}
   scene: any;
   renderer: any;
+  // noise: any = new Noise();
 
   ngOnInit(): void {
     this.scene = this.main();
     console.log(this.scene);
+    noise.seed(Math.random());
   }
 
   main() {
@@ -28,7 +33,10 @@ export class DemoComponent implements OnInit {
       scene.fog = new THREE.FogExp2(0xffffff, 0.2);
     }
 
+    let clock = new THREE.Clock();
+
     let boxGrid = this.getBoxGrid(10, 1.5);
+    boxGrid.name = "boxGrid";
 
     let plane = this.getPlane(30);
     plane.rotation.x = Math.PI / 2;
@@ -67,11 +75,21 @@ export class DemoComponent implements OnInit {
       1000
     );
 
-    camera.position.z = 5;
-    camera.position.x = 1;
-    camera.position.y = 2;
+    let cameraZPosition = new THREE.Group();
 
-    camera.lookAt(new THREE.Vector3(0, 0, 0));
+    // let camera = new THREE.OrthographicCamera(
+    //   -15, // Cam frustrum left plane
+    //   15, // Right plane
+    //   15, // Top plane
+    //   -15, // Bottom plane
+    //   1, // Near plane
+    //   1000 // Far plane
+    // );
+
+    // camera.position.z = 5;
+    // camera.position.x = 1;
+    // camera.position.y = 2;
+    // camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     let renderer = new THREE.WebGLRenderer();
     renderer.shadowMap.enabled = true;
@@ -81,7 +99,7 @@ export class DemoComponent implements OnInit {
 
     let controls = new OrbitControls(camera, renderer.domElement);
 
-    this.update(renderer, scene, camera, controls);
+    this.update(renderer, scene, camera, controls, clock);
 
     return scene;
   }
@@ -178,10 +196,12 @@ export class DemoComponent implements OnInit {
     return group;
   }
 
-  update(renderer, scene, camera, controls) {
+  update(renderer, scene, camera, controls, clock) {
     renderer.render(scene, camera);
 
     controls.update();
+
+    let timeElapsed = clock.getElapsedTime();
 
     // let plane = scene.getObjectByName("plane-1");
     // plane.rotation.y += 0.001;
@@ -193,8 +213,15 @@ export class DemoComponent implements OnInit {
     //   child.scale.z += 0.0001;
     // })
 
+    let boxGrid = scene.getObjectByName("boxGrid");
+    boxGrid.children.forEach((child, index) => {
+      let x = timeElapsed * 5 + index;
+      child.scale.y = (noise.simplex2(x, x) + 1) / 2 + 0.001;
+      child.position.y = child.scale.y / 2;
+    });
+
     requestAnimationFrame(() => {
-      this.update(renderer, scene, camera, controls);
+      this.update(renderer, scene, camera, controls, clock);
     });
   }
 }
