@@ -35,10 +35,10 @@ export class DemoComponent implements OnInit {
 
     let clock = new THREE.Clock();
 
-    let boxGrid = this.getBoxGrid(10, 1.5);
+    let boxGrid = this.getBoxGrid(20, 2.5);
     boxGrid.name = "boxGrid";
 
-    let plane = this.getPlane(30);
+    let plane = this.getPlane(100);
     plane.rotation.x = Math.PI / 2;
     plane.name = "plane-1";
 
@@ -56,10 +56,10 @@ export class DemoComponent implements OnInit {
     let helper = new THREE.CameraHelper(directionalLight.shadow.camera);
 
     // GUI
-    gui.add(directionalLight, "intensity", 0, 10);
-    gui.add(directionalLight.position, "x", 0, 20);
-    gui.add(directionalLight.position, "y", 0, 20);
-    gui.add(directionalLight.position, "z", 0, 20);
+    // gui.add(directionalLight, "intensity", 0, 10);
+    // gui.add(directionalLight.position, "x", 0, 20);
+    // gui.add(directionalLight.position, "y", 0, 20);
+    // gui.add(directionalLight.position, "z", 0, 20);
     // gui.add(directionalLight, "penumbra", 0, 1);
 
     scene.add(boxGrid);
@@ -76,6 +76,32 @@ export class DemoComponent implements OnInit {
     );
 
     let cameraZPosition = new THREE.Group();
+    let cameraYPosition = new THREE.Group();
+    let cameraYRotation = new THREE.Group();
+    let cameraXRotation = new THREE.Group();
+    let cameraZRotation = new THREE.Group();
+
+    cameraYPosition.name = "cameraYPosition";
+    cameraZPosition.name = "cameraZPosition";
+    cameraXRotation.name = "cameraXRotation";
+    cameraYRotation.name = "cameraYRotation";
+    cameraZRotation.name = "cameraZRotation";
+
+    cameraZRotation.add(camera);
+    cameraYPosition.add(cameraZRotation);
+    cameraZPosition.add(cameraYPosition);
+    cameraXRotation.add(cameraZPosition);
+    cameraYRotation.add(cameraXRotation);
+    scene.add(cameraYRotation);
+
+    cameraXRotation.rotation.x = -Math.PI / 2;
+    cameraYPosition.position.y = 1;
+    cameraZPosition.position.z = 100;
+
+    gui.add(cameraZPosition.position, "z", 0, 100);
+    gui.add(cameraXRotation.rotation, "x", -Math.PI, Math.PI);
+    gui.add(cameraYRotation.rotation, "y", -Math.PI, Math.PI);
+    gui.add(cameraZRotation.rotation, "z", -Math.PI, Math.PI);
 
     // let camera = new THREE.OrthographicCamera(
     //   -15, // Cam frustrum left plane
@@ -137,10 +163,13 @@ export class DemoComponent implements OnInit {
     let light = new THREE.DirectionalLight(color, intensity);
     light.castShadow = true;
 
-    light.shadow.camera.left = -15;
-    light.shadow.camera.bottom = -15;
-    light.shadow.camera.right = 15;
-    light.shadow.camera.top = 15;
+    light.shadow.camera.left = -40;
+    light.shadow.camera.bottom = -40;
+    light.shadow.camera.right = 40;
+    light.shadow.camera.top = 40;
+
+    light.shadow.mapSize.width = 4096;
+    light.shadow.mapSize.height = 4096;
 
     return light;
   }
@@ -176,13 +205,13 @@ export class DemoComponent implements OnInit {
     var group = new THREE.Group();
 
     for (let i = 0; i < amount; i++) {
-      let obj = this.getBox(1, 1, 1);
+      let obj = this.getBox(1, 3, 1);
       obj.position.x = i * seperationMultiplier;
       obj.position.y = obj.geometry.parameters.height / 2;
       group.add(obj);
 
       for (let j = 1; j < amount; j++) {
-        let obj = this.getBox(1, 1, 1);
+        let obj = this.getBox(1, 3, 1);
         obj.position.x = i * seperationMultiplier;
         obj.position.y = obj.geometry.parameters.height / 2;
         obj.position.z = j * seperationMultiplier;
@@ -203,6 +232,18 @@ export class DemoComponent implements OnInit {
 
     let timeElapsed = clock.getElapsedTime();
 
+    let cameraXRotation = scene.getObjectByName("cameraXRotation");
+    if (cameraXRotation.rotation.x < 0) {
+      cameraXRotation.rotation.x += 0.01;
+    }
+
+    let cameraZPosition = scene.getObjectByName("cameraZPosition");
+    cameraZPosition.position.z -= 0.25;
+
+    let cameraZRotation = scene.getObjectByName("cameraZRotation");
+    cameraZRotation.rotation.z =
+      noise.simplex2(timeElapsed * 1.5, timeElapsed * 1.5) * 0.2;
+
     // let plane = scene.getObjectByName("plane-1");
     // plane.rotation.y += 0.001;
     // plane.rotation.z += 0.001;
@@ -215,7 +256,7 @@ export class DemoComponent implements OnInit {
 
     let boxGrid = scene.getObjectByName("boxGrid");
     boxGrid.children.forEach((child, index) => {
-      let x = timeElapsed * 5 + index;
+      let x = timeElapsed + index;
       child.scale.y = (noise.simplex2(x, x) + 1) / 2 + 0.001;
       child.position.y = child.scale.y / 2;
     });

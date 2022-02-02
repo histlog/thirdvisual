@@ -24,6 +24,7 @@
     "simplenoise": "^1.0.1",
     "three": "^0.136.0",
     "tslib": "^1.10.0",
+    "tweenjs": "^1.0.2",
     "zone.js": "~0.9.1"
   },
   "devDependencies": {
